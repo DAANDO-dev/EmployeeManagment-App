@@ -1,4 +1,4 @@
-<p>employee-form works!</p>
+<h2>{{isEditing? 'Edit' : 'Create'}} Employee</h2>
 
 <div *ngIf="errorMessage !=''">
   <strong>Error:</strong>
@@ -31,5 +31,5 @@
     <input type="text" name="position" [(ngModel)]="employee.position" />
   </div>
 
-  <button type="submit">Create</button>
+  <button type="submit">{{isEditing? 'Edit' : 'Create'}}</button>
 </form>

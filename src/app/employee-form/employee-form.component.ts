@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Employee } from '../../Models/employee';
 import { EmployeeService } from '../employee.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { CommonModule } from '@angular/common';
+
 
 @Component({
   selector: 'app-employee-form',
@@ -22,25 +23,73 @@ export class EmployeeFormComponent {
     position: '',
   };
 
+  isEditing: boolean = false;
+
   errorMessage: string = '';
 
   constructor(
     private employeeService: EmployeeService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
-  onSubmit(): void {
-    console.log('Form submitted:', this.employee);
-    // Here you can add the logic to send the employee data to the server
-    this.employeeService.createEmploye(this.employee).subscribe({
-      next: () => {
-        this.router.navigate(['/']);
-      },
 
-      error: (error) => {
-        console.error(error);
-        this.errorMessage = `Error occured(${error.status})`;
-      },
+
+  ngOnInit(): void {
+    this.route.paramMap.subscribe((result) => {
+
+      const id = result.get('id')
+
+      if(id){
+        // editing employee
+        this.isEditing = true;
+        
+        this.employeeService.getEmployeesById(Number(id)).subscribe({
+          next: (result) =>
+            (this.employee = Array.isArray(result) ? result[0] : result),
+          error: (err) =>
+            (this.errorMessage = `Error occurred(${err.status})`),
+        });
+      }
     });
   }
+
+  onSubmit(): void {
+
+    if(this.isEditing){
+
+      this.employeeService.editEmployee(this.employee)
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        },
+
+        error: (error) => {
+          console.error(error);
+          this.errorMessage = `Error occurred during Update(${error.status})`;
+        },
+      });
+      
+    } else {
+      // Creating a new employee
+      this.employeeService.createEmployee(this.employee).subscribe({
+        next: () => {
+          this.router.navigate(['/']);
+        },
+
+        error: (error) => {
+          console.error(error);
+          this.errorMessage = `Error occurred during Creating (${error.status})`;
+        },
+      });
+    }
+
+
+
+    
+    
+    
+  }
+
+
 }
